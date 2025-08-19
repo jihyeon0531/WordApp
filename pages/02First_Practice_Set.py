@@ -70,7 +70,7 @@ with tab2:
 
             # Highlight the word in the sentence (case-sensitive)
             highlighted_sentence = sentence.replace(
-                word, f"<span style='color:pink; font-weight:bold'>{word}</span>"
+                word, f"<span style='color:purple; font-weight:bold'>{word}</span>"
             )
 
             # Word number and large word display
