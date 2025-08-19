@@ -14,15 +14,15 @@ tab1, tab2 = st.tabs(["Intro", "Word list"])
 
 # Tab 1: Intro
 with tab1:
-    st.write("Welcome to the app.")
+    st.write("단어 학습 어플리케이션입니다.")
     st.markdown("""
-        This app helps you practice vocabulary.
+        학습할 어휘를 도와줄게요.
         
-        👉 Go to the **Word list** tab to review words.  
-        👉 Later, you can try quizzes and practice exercises!
+        👉 먼저 **Word list** tab을 클릭하면 단어 목록을 볼 수 있어요.  
+        👉 다른 활동은 곧 추가될 거예요!
     """)
 
 # Tab 2: Word List
 with tab2:
-    st.header("📋 Vocabulary Word List")
+    st.header("📋 Set 1")
     st.dataframe(df, use_container_width=True)
