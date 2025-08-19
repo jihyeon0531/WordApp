@@ -24,5 +24,5 @@ with tab1:
 
 # Tab 2: Word List
 with tab2:
-    st.header("📋 Word list (전체 단어 목록)")
+    st.markdown("### 📋 Word list (전체 단어 목록)")
     st.dataframe(df, use_container_width=True)
