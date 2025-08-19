@@ -19,15 +19,13 @@ if "submitted" not in st.session_state:
 
 # Set page layout
 st.set_page_config(page_title="Word Practice")
-st.markdown("### 📝 Word Practice App: 1st Set")
+st.markdown("### 🐥 단어 학습 어플리케이션 (Word learning App")
 
 # Tabs
 tab1, tab2, tab3 = st.tabs(["1️⃣ Select Words", "2️⃣ Practice", "3️⃣ Summary"])
 
 # ---------------- Tab 1 ----------------
 with tab1:
-
-    st.write("단어 학습 어플리케이션 (Word learning App)")
     st.markdown("### ✨ Step 1: Choose words to practice")
     st.markdown("""
         🐣 안녕~! 내가 학습할 어휘를 도와줄게 :-)
