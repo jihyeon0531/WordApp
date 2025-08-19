@@ -19,7 +19,7 @@ if "submitted" not in st.session_state:
 
 # Set page layout
 st.set_page_config(page_title="Word Practice")
-st.title("📝 Word Practice App")
+st.markdown("###📝 Word Practice App: 1st Set")
 
 # Tabs
 tab1, tab2, tab3 = st.tabs(["1️⃣ Select Words", "2️⃣ Practice", "3️⃣ Summary"])
