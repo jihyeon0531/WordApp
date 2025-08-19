@@ -67,16 +67,18 @@ with tab2:
             row = df[df["Word"] == word].iloc[0]
             sentence = row['Sentence']
             meaning = row['Meaning']
+            translation = row['Translation']
 
             # Highlight the word in the sentence (case-sensitive)
             highlighted_sentence = sentence.replace(
                 word, f"<span style='color:orange; font-weight:bold'>{word}</span>"
             )
 
-            # Word number and display
+            # Display word, meaning, example, translation, and audio
             st.markdown(f"### {idx}. {word}")
             st.markdown(f"<span style='color:gray'><b>뜻:</b> {meaning}</span>", unsafe_allow_html=True)
             st.markdown(f"예문: <i>{highlighted_sentence}</i>", unsafe_allow_html=True)
+            st.markdown(f"<span style='color:gray'>{translation}</span>", unsafe_allow_html=True)
 
             # Generate and play audio using gTTS
             tts = gTTS(sentence)
@@ -85,7 +87,6 @@ with tab2:
                 st.audio(fp.name, format="audio/mp3")
 
             st.write("---")
-
 
 
 # ---------------- Tab 3 ----------------
