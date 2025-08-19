@@ -56,10 +56,20 @@ with tab2:
         st.info("Please go to **Tab 1** and select words first.")
     else:
         st.write(f"You're practicing {len(st.session_state.selected_words)} word(s):")
+
         for word in st.session_state.selected_words:
             row = df[df["Word"] == word].iloc[0]
+            sentence = row['Sentence']
+
             st.markdown(f"**{row['Word']}** — {row['Meaning']}")
-            st.write(f"Example: *{row['Sentence']}*")
+            st.write(f"Example: *{sentence}*")
+
+            # Generate and play audio using gTTS
+            tts = gTTS(sentence)
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
+                tts.save(fp.name)
+                st.audio(fp.name, format="audio/mp3")
+
             st.write("---")
 
 # ---------------- Tab 3 ----------------
