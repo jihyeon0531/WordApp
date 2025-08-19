@@ -73,9 +73,9 @@ with tab2:
                 word, f"<span style='color:orange; font-weight:bold'>{word}</span>"
             )
 
-            # Word number and large word display
+            # Word number and display
             st.markdown(f"### {idx}. {word}")
-            st.markdown(f"**뜻:** {meaning}")
+            st.markdown(f"<span style='color:gray'><b>뜻:</b> {meaning}</span>", unsafe_allow_html=True)
             st.markdown(f"예문: <i>{highlighted_sentence}</i>", unsafe_allow_html=True)
 
             # Generate and play audio using gTTS
@@ -85,6 +85,7 @@ with tab2:
                 st.audio(fp.name, format="audio/mp3")
 
             st.write("---")
+
 
 
 # ---------------- Tab 3 ----------------
