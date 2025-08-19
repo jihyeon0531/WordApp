@@ -26,7 +26,7 @@ tab1, tab2, tab3 = st.tabs(["1️⃣ Select Words", "2️⃣ Practice", "3️⃣
 
 # ---------------- Tab 1 ----------------
 with tab1:
-    st.markdown("## ✅ Step 1: Choose words to practice")
+    st.markdown("### ✅ Step 1: Choose words to practice")
 
     # Use a form to group checkboxes and submission
     with st.form("word_select_form"):
