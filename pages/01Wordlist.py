@@ -3,7 +3,7 @@ import pandas as pd
 
 # Set up page
 st.set_page_config(page_title="Test App")
-st.title("🍰단어장")
+st.markdown("### 🍰 맛있는 단어장")
 
 # Load the CSV from GitHub
 CSV_URL = "https://raw.githubusercontent.com/jihyeon0531/WordApp/refs/heads/main/data/wdata01.csv"
