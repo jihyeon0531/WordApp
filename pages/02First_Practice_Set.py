@@ -74,7 +74,7 @@ with tab2:
             )
 
             # Word number and large word display
-            st.markdown(f"### {idx}. {word.capitalize()}")
+            st.markdown(f"### {idx}. {word}")
             st.markdown(f"**뜻:** {meaning}")
             st.markdown(f"예문: <i>{highlighted_sentence}</i>", unsafe_allow_html=True)
 
