@@ -26,8 +26,15 @@ tab1, tab2, tab3 = st.tabs(["1️⃣ Select Words", "2️⃣ Practice", "3️⃣
 
 # ---------------- Tab 1 ----------------
 with tab1:
-    st.markdown("### ✨ Step 1: Choose words to practice")
 
+    st.write("단어 학습 어플리케이션 (Word learning App)")
+    st.markdown("### ✨ Step 1: Choose words to practice")
+    st.markdown("""
+        🐣 안녕~! 내가 학습할 어휘를 도와줄게 :-)
+               
+        1. 먼저 위쪽에 있는 🐋**2. Word list** tab을 클릭하면 단어 목록을 볼 수 있어요.  
+        2. 목록에 나온 단어들 중에서 내가 잘 모르겠다 생각되는 단어를 선택하면 그 단어들을 연습하도록 도와줄 거예요!
+    """)
     # Use a form to group checkboxes and submission
     with st.form("word_select_form"):
         selected = []
