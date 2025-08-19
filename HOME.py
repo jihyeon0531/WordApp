@@ -11,7 +11,7 @@ qr_image_url = "https://github.com/jihyeon0531/WordApp/raw/main/images/appQR.png
 col1, col2, col3 = st.columns([1, 2, 1])  # middle column bigger
 
 with col1:
-    st.image(qr_image_url, width=100, caption="QR Code")  # Expand button appears
-with col2:
     st.image(main_image_url, width=500, caption="Welcome Image")  # Expand button appears
+with col3:
+    st.image(qr_image_url, width=100, caption="QR Code")  # Expand button appears
 
