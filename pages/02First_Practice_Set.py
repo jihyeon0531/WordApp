@@ -52,6 +52,9 @@ with tab1:
         else:
             st.warning("⚠️ You did not select any words.")
 
+from gtts import gTTS
+import tempfile
+
 # ---------------- Tab 2 ----------------
 with tab2:
     st.markdown("### 🐧 Step 2: 자, 이제 선택한 단어들을 학습해 봅시다.")
@@ -60,12 +63,20 @@ with tab2:
     else:
         st.write(f"연습할 단어는 {len(st.session_state.selected_words)} 개입니다:")
 
-        for word in st.session_state.selected_words:
+        for idx, word in enumerate(st.session_state.selected_words, start=1):
             row = df[df["Word"] == word].iloc[0]
             sentence = row['Sentence']
+            meaning = row['Meaning']
 
-            st.markdown(f"**{row['Word']}** — {row['Meaning']}")
-            st.write(f"Example: *{sentence}*")
+            # Highlight the word in the sentence (case-sensitive)
+            highlighted_sentence = sentence.replace(
+                word, f"<span style='color:green; font-weight:bold'>{word}</span>"
+            )
+
+            # Word number and large word display
+            st.markdown(f"### {idx}. {word.capitalize()}")
+            st.markdown(f"**뜻:** {meaning}")
+            st.markdown(f"예문: <i>{highlighted_sentence}</i>", unsafe_allow_html=True)
 
             # Generate and play audio using gTTS
             tts = gTTS(sentence)
@@ -74,6 +85,7 @@ with tab2:
                 st.audio(fp.name, format="audio/mp3")
 
             st.write("---")
+
 
 # ---------------- Tab 3 ----------------
 with tab3:
