@@ -46,7 +46,8 @@ with tab2:
         return ['background-color: lightyellow' if i == st.session_state.selected_row else '' for i in range(len(s))]
 
     # Display styled dataframe
-    st.dataframe(df.style.apply(highlight_row, axis=0), use_container_width=True)
+    st.write(df.style.apply(highlight_row, axis=0))
+
 
 # --------- Tab 3: Practice (Single Word Fill-in-the-Blank) ---------
 with tab3:
