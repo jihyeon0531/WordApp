@@ -2,55 +2,34 @@ import streamlit as st
 import pandas as pd
 import random
 
-# Load the CSV from GitHub
+# Load CSV data from GitHub
 CSV_URL = "https://raw.githubusercontent.com/jihyeon0531/WordApp/refs/heads/main/data/wdata01.csv"
 df = pd.read_csv(CSV_URL)
 
-# Initialize session state for selected row
-if "selected_row" not in st.session_state:
-    st.session_state.selected_row = None
-
-# Page title
+# Set page config
 st.set_page_config(page_title="Vocabulary Practice App", layout="wide")
 st.title("📘 Vocabulary Practice App")
 
 # Create tabs
 tab1, tab2, tab3 = st.tabs(["Introduction", "Wordlist", "Practice"])
 
-# --------- Tab 1: Introduction ---------
+# -------- Tab 1: Introduction --------
 with tab1:
     st.header("🧾 How to Use This App")
     st.markdown("""
     Welcome to the Vocabulary Practice App!  
     Here's how to use it:
-    
-    1. **Wordlist** tab shows all vocabulary items.
-       - Click on any word to highlight it and view its details.
-    2. **Practice** tab presents a random sentence with one word missing.
-       - Try to guess the missing word and get instant feedback.
+
+    1. **Wordlist** tab: Browse the vocabulary list and review meanings.
+    2. **Practice** tab: Try filling in the blanks using the vocabulary in context.
     """)
 
-# --------- Tab 2: Wordlist (Interactive) ---------
+# -------- Tab 2: Wordlist --------
 with tab2:
-    st.header("📋 Wordlist")
-
-    # Let user select a row by Word
-    selected_word = st.radio("Click a word to highlight:", df["Word"].tolist(), horizontal=True)
-
-    # Find selected row index
-    selected_index = df[df["Word"] == selected_word].index[0]
-    st.session_state.selected_row = selected_index
-
-    # Highlight selected row
-    def highlight_row(s):
-        return ['background-color: lightyellow' if i == st.session_state.selected_row else '' for i in range(len(s))]
-
-    # Display styled dataframe
+    st.header("📋 Wordlist Table")
     st.dataframe(df, use_container_width=True)
 
-
-
-# --------- Tab 3: Practice (Single Word Fill-in-the-Blank) ---------
+# -------- Tab 3: Practice --------
 with tab3:
     st.header("📝 Vocabulary Practice")
 
