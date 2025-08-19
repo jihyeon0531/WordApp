@@ -11,8 +11,8 @@ qr_image_url = "https://github.com/jihyeon0531/WordApp/raw/main/images/appQR.png
 st.markdown(
     f"""
     <div style="text-align: center;">
-        <img src="{main_image_url}" width="300"><br><br>
-        <img src="{qr_image_url}" width="180">
+        <img src="{main_image_url}" width="500"><br><br>
+        <img src="{qr_image_url}" width="100">
     </div>
     """,
     unsafe_allow_html=True
