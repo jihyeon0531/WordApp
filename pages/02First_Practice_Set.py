@@ -31,9 +31,9 @@ with tab1:
     st.markdown("### ✨ Step 1: Choose words to practice")
     st.markdown("""
         🐣 안녕~! 내가 학습할 어휘를 도와줄게 :-)
-               
-        1. 먼저 위쪽에 있는 🐋**2. Word list** tab을 클릭하면 단어 목록을 볼 수 있어요.  
-        2. 목록에 나온 단어들 중에서 내가 잘 모르겠다 생각되는 단어를 선택하면 그 단어들을 연습하도록 도와줄 거예요!
+        목록에 나온 단어들 중에서 내가 잘 모르겠다 생각되는 단어를 선택하면 되어. 
+        
+        단어들의 뜻, 발음, 그리고 어떻게 문장에 사용하는지도 배울 수 있어!
     """)
     # Use a form to group checkboxes and submission
     with st.form("word_select_form"):
