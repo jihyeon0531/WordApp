@@ -4,8 +4,8 @@ st.write("Welcome to Jihyeon Teacher's App Page")
 st.caption("Since Aug 15, 2025")
 
 # Image links
-main_image_url = "https://raw.githubusercontent.com/jihyeon0531/WordApp/main/images/main.png"
-qr_image_url = "https://raw.githubusercontent.com/jihyeon0531/WordApp/main/images/qr.png"
+main_image_url = "https://github.com/jihyeon0531/WordApp/raw/main/images/welcome2.png"
+qr_image_url = "https://github.com/jihyeon0531/WordApp/raw/main/images/appQR.png"
 
 # Center the images
 st.markdown(
