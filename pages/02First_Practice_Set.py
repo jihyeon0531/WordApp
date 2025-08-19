@@ -77,8 +77,11 @@ with tab2:
             # Display word, meaning, example, translation, and audio
             st.markdown(f"### {idx}. {word}")
             st.markdown(f"<span style='color:gray'><b>뜻:</b> {meaning}</span>", unsafe_allow_html=True)
-            st.markdown(f"예문: <i>{highlighted_sentence}</i>", unsafe_allow_html=True)
-            st.markdown(f"<span style='color:gray'>{translation}</span>", unsafe_allow_html=True)
+            st.markdown(
+                f"예문: <i>{highlighted_sentence}</i> <span style='color:gray'>({translation})</span>",
+                unsafe_allow_html=True
+            )
+
 
             # Generate and play audio using gTTS
             tts = gTTS(sentence)
