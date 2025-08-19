@@ -36,7 +36,7 @@ with tab1:
             if checked:
                 selected.append(row["Word"])
 
-        submitted = st.form_submit_button("✨ 선택 후 이 버튼 click하세요!")
+        submitted = st.form_submit_button("✨ Click to start!")
         st.caption("선택된 단어들을 가지고 두 번째 탭에서 연습하게 됩니다.")
 
     # Save to session state if submitted
