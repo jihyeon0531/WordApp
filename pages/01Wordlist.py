@@ -10,7 +10,7 @@ CSV_URL = "https://raw.githubusercontent.com/jihyeon0531/WordApp/refs/heads/main
 df = pd.read_csv(CSV_URL)
 
 # Create tabs
-tab1, tab2 = st.tabs(["Intro", "Word list"])
+tab1, tab2 = st.tabs(["🐾 1. 설명페이지", "🐋 2. Word list"])
 
 # Tab 1: Intro
 with tab1:
@@ -18,7 +18,7 @@ with tab1:
     st.markdown("""
         학습할 어휘를 도와줄게요.
         
-        👉 먼저 **Word list** tab을 클릭하면 단어 목록을 볼 수 있어요.  
+        👉 먼저 위쪽에 있는 🐋**2. Word list** tab을 클릭하면 단어 목록을 볼 수 있어요.  
         👉 다른 활동은 곧 추가될 거예요!
     """)
 
