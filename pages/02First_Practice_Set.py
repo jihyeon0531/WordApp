@@ -58,7 +58,7 @@ with tab2:
     if not st.session_state.submitted or len(st.session_state.selected_words) == 0:
         st.info("Please go to **Tab 1** and select words first.")
     else:
-        st.write(f"You're practicing {len(st.session_state.selected_words)} word(s):")
+        st.write(f"연습할 단어는 {len(st.session_state.selected_words)} 개입니다:")
 
         for word in st.session_state.selected_words:
             row = df[df["Word"] == word].iloc[0]
