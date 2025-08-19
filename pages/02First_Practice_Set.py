@@ -54,7 +54,7 @@ with tab1:
 
 # ---------------- Tab 2 ----------------
 with tab2:
-    st.header("🚀 Step 2: 자, 이제 선택한 단어들을 학습해 봅시다.")
+    st.markdown("### 🐧 Step 2: 자, 이제 선택한 단어들을 학습해 봅시다.")
     if not st.session_state.submitted or len(st.session_state.selected_words) == 0:
         st.info("Please go to **Tab 1** and select words first.")
     else:
