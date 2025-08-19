@@ -14,12 +14,12 @@ tab1, tab2 = st.tabs(["🐾 1. 설명페이지", "🐋 2. Word list"])
 
 # Tab 1: Intro
 with tab1:
-    st.write("단어 학습 어플리케이션입니다.")
+    st.write("단어 학습 어플리케이션 (Word learning App)")
     st.markdown("""
-        학습할 어휘를 도와줄게요.
-        
+        제가 학습할 어휘를 도와줄게요.
+        <설명>
         👉 먼저 위쪽에 있는 🐋**2. Word list** tab을 클릭하면 단어 목록을 볼 수 있어요.  
-        👉 다른 활동은 곧 추가될 거예요!
+        👉 잘 모르겠다 생각되는 단어를 선택하시면 그 단어들을 연습하도록 도와줄 거예요!
     """)
 
 # Tab 2: Word List
