@@ -1,5 +1,8 @@
 import streamlit as st
 import pandas as pd
+from gtts import gTTS
+import tempfile
+import os
 
 # Load the CSV
 CSV_URL = "https://raw.githubusercontent.com/jihyeon0531/WordApp/refs/heads/main/data/wdata01.csv"
