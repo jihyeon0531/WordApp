@@ -190,7 +190,7 @@ with tab1:
             unsafe_allow_html=True
         )
 
-
+        st.write("")
         # Options (radio)
         st.session_state.user_choice = st.radio(
             "정답을 선택하세요:",
