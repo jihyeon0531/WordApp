@@ -51,7 +51,34 @@ if "quiz" not in st.session_state:
 if "answer_shown" not in st.session_state:
     st.session_state.answer_shown = False
 
+
+
+# ---------------- be verb handling ------------------------------
+import re
+
+def make_highlight_pattern(phrase: str) -> re.Pattern:
+    """
+    Build a regex that matches the phrase in the sentence,
+    handling common inflections if it starts with 'be '.
+    """
+    ph = phrase.strip()
+    # Special-case leading 'be ' → any be-form
+    if ph.lower().startswith("be "):
+        rest = re.escape(ph[3:].strip())            # 'good at' -> 'good\ at'
+        be_forms = r"(?:am|is|are|was|were|be|being|been)"
+        pattern = rf"\b{be_forms}\s+{rest}\b"
+    else:
+        # Default: exact phrase match with word boundaries
+        pattern = rf"\b{re.escape(ph)}\b"
+    return re.compile(pattern, flags=re.IGNORECASE)
+
+def highlight_phrase(sentence: str, phrase: str, color="orange") -> str:
+    pat = make_highlight_pattern(phrase)
+    return pat.sub(lambda m: f"<span style='color:{color}; font-weight:bold'>{m.group(0)}</span>",
+                   sentence)
+    
 # ---------------- Helper: make a new quiz question ----------------
+
 def make_quiz_question():
     chunk = sets[st.session_state.selected_set_idx]
     # Pick a random row from this 10-word set
@@ -163,9 +190,11 @@ with tab2:
             meaning = str(row["Meaning"])
             translation = str(row["Translation"])
 
-            # Highlight the word in the sentence (simple case-sensitive replace)
-            highlighted_sentence = sentence.replace(
-                word, f"<span style='color:orange; font-weight:bold'>{word}</span>"
+            highlighted_sentence = highlight_phrase(sentence, word)
+            st.markdown(
+                f"예문: <i>{highlighted_sentence}</i> "
+                f"<span style='color:gray'>({translation})</span>",
+                unsafe_allow_html=True
             )
 
             # Display word, meaning, example, translation, and audio
