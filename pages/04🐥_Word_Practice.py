@@ -119,7 +119,7 @@ tab1, tab2, tab3 = st.tabs(["1️⃣ Practice 1: 문장속 단어", "2️⃣ Pra
 # Tab 1: Practice 1 (MCQ app from your old Tab 3)
 # -------------------------------------------------
 with tab1:
-    st.markdown("#### 세트 선택")
+    st.markdown("#### 1. 세트 선택")
     if "selected_set" not in st.session_state:
         st.session_state.selected_set = set_names[0] if set_names else None
     if "current_q" not in st.session_state:
@@ -136,7 +136,7 @@ with tab1:
 
     cur_df = sets[st.session_state.selected_set].copy()
 
-    st.markdown("#### 연습 시작")
+    st.markdown("#### 2. 연습 시작")
 
     colA, colB = st.columns([1,1])
     with colA:
