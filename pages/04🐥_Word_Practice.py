@@ -140,7 +140,7 @@ with tab1:
 
     colA, colB = st.columns([1,1])
     with colA:
-        if st.button("🟢 새 문제 시작 (Start)"):
+        if st.button("🍅 새 문제 시작 (Start)"):
             # Pick a random target row from this set
             row = cur_df.sample(1, random_state=random.randint(0, 10_000)).iloc[0]
             target_word = str(row["Word"])
@@ -166,7 +166,7 @@ with tab1:
             st.session_state.answered = False
 
     with colB:
-        if st.button("🔁 초기화 (Reset)"):
+        if st.button("🔁 초기 (Reset)"):
             reset_question()
 
 
