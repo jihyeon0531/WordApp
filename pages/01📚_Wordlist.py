@@ -9,9 +9,6 @@ st.markdown("### 🍰 맛있는 단어장")
 CSV_URL = "https://raw.githubusercontent.com/jihyeon0531/WordApp/refs/heads/main/data/2025_Ch6_8_0819.csv"
 df = pd.read_csv(CSV_URL)
 
-# Display without index
-st.dataframe(df, hide_index=True)
-
 
 # Create tabs
 tab1, tab2 = st.tabs(["🐾 1. 설명페이지", "🐋 2. Word list"])
@@ -29,4 +26,9 @@ with tab1:
 # Tab 2: Word List
 with tab2:
     st.markdown("### 📋 Word list (전체 단어 목록)")
-    st.dataframe(df, use_container_width=True)
+    # Display without index
+    st.dataframe(df, hide_index=True)
+
+    PDF_URL = "https://github.com/jihyeon0531/WordApp/raw/main/files/sample.pdf"
+    st.markdown(f"[💾 Download word list PDF file]({PDF_URL}): 6 pages", unsafe_allow_html=True)
+
