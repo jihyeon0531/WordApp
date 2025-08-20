@@ -166,7 +166,7 @@ with tab1:
             st.session_state.answered = False
 
     with colB:
-        if st.button("🔁 초기 (Reset)"):
+        if st.button("🔁 초기화 (Reset)"):
             reset_question()
 
 
