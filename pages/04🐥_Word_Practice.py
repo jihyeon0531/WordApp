@@ -169,7 +169,7 @@ with tab1:
         if st.button("🔁 초기화 (Reset)"):
             reset_question()
 
-    st.write("")  # spacing
+
 
     if st.session_state.current_q is None:
         st.info("‘새 문제 시작’ 버튼을 눌러 연습을 시작하세요.")
