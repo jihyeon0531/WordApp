@@ -63,7 +63,7 @@ def make_quiz_question():
     # Cloze the answer word once (underline blank)
     pattern = r"\b" + re.escape(ans_word) + r"\b"
     cloze_sentence = re.sub(
-        pattern, "<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>", sentence, count=1, flags=re.IGNORECASE
+        pattern, "<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>", sentence, count=1, flags=re.IGNORECASE
     )
 
     # Build options: 1 correct + 3 distractors from the same set, then "None of the above" at the end
