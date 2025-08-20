@@ -136,7 +136,6 @@ with tab1:
 
     cur_df = sets[st.session_state.selected_set].copy()
 
-    st.divider()
     st.markdown("#### 연습 시작")
 
     colA, colB = st.columns([1,1])
@@ -179,6 +178,7 @@ with tab1:
 
 
         # The question prompt
+        st.divider()
         st.markdown("**Q:** 다음 문장의 의미로 보아 밑줄 친 부분에 들어갈 가장 적절한 단어는?")
         # Show sentence (masked) and translation
         st.markdown(
