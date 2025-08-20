@@ -29,6 +29,6 @@ with tab2:
     # Display without index
     st.dataframe(df, hide_index=True)
 
-    PDF_URL = "https://github.com/jihyeon0531/WordApp/raw/main/files/sample.pdf"
+    PDF_URL = "https://github.com/jihyeon0531/WordApp/raw/main/data/wordlist-0821.pdf"
     st.markdown(f"[💾 Download]({PDF_URL}) Word list PDF file: 6 pages", unsafe_allow_html=True)
 
