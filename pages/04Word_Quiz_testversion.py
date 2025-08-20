@@ -199,14 +199,16 @@ with tab3:
     # Start/Next button
     if st.button("🎯 문제 시작 / 다음 문제"):
         make_quiz_question()
-
+    
+    st.markdown("**Q:** 다음 문장의 의미로 보아 밑줄 친 부분에 들어갈 가장 적절한 단어는?")
+    
     # If we have a quiz question, render it
     if st.session_state.quiz:
         q = st.session_state.quiz
 
         # Show sentence (font size 16) with cloze underline
         st.markdown(
-            f"<div style='font-size:16px;'>{q['sentence_cloze']}</div>",
+            f"<div style='font-size:18px;'><b>{q['sentence_cloze']}</b></div>",
             unsafe_allow_html=True,
         )
         # Show translation in gray, in parentheses
@@ -215,8 +217,7 @@ with tab3:
             unsafe_allow_html=True,
         )
 
-        st.markdown("**질문:** 다음 문장의 의미로 보아 밑줄 친 부분에 들어갈 가장 적절한 단어는?")
-
+        
         # Options (last one is always "None of the above")
         choice = st.radio(
             "정답 선택",
