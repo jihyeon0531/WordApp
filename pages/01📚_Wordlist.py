@@ -30,5 +30,5 @@ with tab2:
     st.dataframe(df, hide_index=True)
 
     PDF_URL = "https://github.com/jihyeon0531/WordApp/raw/main/files/sample.pdf"
-    st.markdown(f"[💾 Download word list PDF file]({PDF_URL}): 6 pages", unsafe_allow_html=True)
+    st.markdown(f"[💾 Download]({PDF_URL}) Word list PDF file: 6 pages", unsafe_allow_html=True)
 
