@@ -226,7 +226,7 @@ with tab1:
 # Tab 2: 듣고 스펠링 입력 (대소문자/공백/문장부호 무시)
 # -------------------------------------------------
 with tab2:
-    st.markdown("#### 1. 세트 선택 (탭1과 동일)")
+    st.markdown("#### 1. 세트 선택")
     if "current_q2" not in st.session_state:
         st.session_state.current_q2 = None
     if "user_spelling" not in st.session_state:
