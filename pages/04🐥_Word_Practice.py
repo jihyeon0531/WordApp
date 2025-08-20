@@ -1,272 +1,236 @@
-import math
-import os
+# practice_mcq_app.py
 import random
 import re
-import tempfile
+from typing import List, Dict
 
 import pandas as pd
 import streamlit as st
-from gtts import gTTS
 
-# ---------------- Page setup ----------------
-st.set_page_config(page_title="Word Practice")
-st.markdown("### 🐥 단어 학습 어플리케이션 (Word learning App)")
+# -------------------------------------------------
+# Config
+# -------------------------------------------------
+st.set_page_config(page_title="Word Practice (MCQ)")
 
-# ---------------- Data ----------------
 CSV_URL = "https://raw.githubusercontent.com/jihyeon0531/WordApp/refs/heads/main/data/wdata01.csv"
-df = pd.read_csv(CSV_URL)
+# Expected columns in CSV: Word, Meaning, Sentence, Translation
+# Optionally, a Set column (e.g., Set = 1,2,3...), otherwise we chunk every 10 rows as one set.
 
-# Safety: ensure required columns exist
-required_cols = {"Word", "Meaning", "Sentence", "Translation"}
-missing = required_cols - set(df.columns)
-if missing:
-    st.error(f"CSV is missing columns: {', '.join(missing)}")
-    st.stop()
+# -------------------------------------------------
+# Helpers
+# -------------------------------------------------
+def load_data(url: str) -> pd.DataFrame:
+    df = pd.read_csv(url)
+    # basic hygiene
+    needed = ["Word", "Meaning", "Sentence", "Translation"]
+    for col in needed:
+        if col not in df.columns:
+            raise ValueError(f"CSV is missing required column: {col}")
+    return df
 
-# Chunk the dataframe into sets of 10 words
-def chunk_df(frame, size=10):
-    return [frame.iloc[i:i + size].reset_index(drop=True) for i in range(0, len(frame), size)]
-
-sets = chunk_df(df, size=10)
-
-# Labels for the dropdown (show all 10 words in each option)
-set_labels = []
-for i, chunk in enumerate(sets, start=1):
-    words = ", ".join(chunk["Word"].astype(str).tolist())
-    set_labels.append(f"Set {i}: {words}")
-
-# ---------------- Session state ----------------
-if "selected_words" not in st.session_state:
-    st.session_state.selected_words = []
-if "submitted" not in st.session_state:
-    st.session_state.submitted = False
-if "selected_set_idx" not in st.session_state:
-    st.session_state.selected_set_idx = 0  # default to first set
-
-# Quiz state
-if "quiz_qid" not in st.session_state:
-    st.session_state.quiz_qid = 0
-if "quiz" not in st.session_state:
-    st.session_state.quiz = None
-if "answer_shown" not in st.session_state:
-    st.session_state.answer_shown = False
-
-
-
-# ---------------- be verb handling ------------------------------
-import re
-
-def make_highlight_pattern(phrase: str) -> re.Pattern:
+def build_sets(df: pd.DataFrame, size: int = 10) -> Dict[str, pd.DataFrame]:
     """
-    Build a regex that matches the phrase in the sentence,
-    handling common inflections if it starts with 'be '.
+    Return a dict mapping set name -> 10-row slice (or grouped by 'Set' if present).
     """
-    ph = phrase.strip()
-    # Special-case leading 'be ' → any be-form
-    if ph.lower().startswith("be "):
-        rest = re.escape(ph[3:].strip())            # 'good at' -> 'good\ at'
-        be_forms = r"(?:am|is|are|was|were|be|being|been)"
-        pattern = rf"\b{be_forms}\s+{rest}\b"
+    # If a 'Set' column exists, group by it; otherwise chunk by 10.
+    set_col = None
+    for candidate in ["Set", "set", "SetID", "Set_Id", "SetName"]:
+        if candidate in df.columns:
+            set_col = candidate
+            break
+
+    sets = {}
+    if set_col:
+        for sid, g in df.groupby(set_col):
+            g = g.reset_index(drop=True)
+            sets[f"Set {sid}"] = g
     else:
-        # Default: exact phrase match with word boundaries
+        total = len(df)
+        set_idx = 1
+        for start in range(0, total, size):
+            end = min(start + size, total)
+            slice_df = df.iloc[start:end].reset_index(drop=True)
+            if len(slice_df) > 0:
+                sets[f"Set {set_idx}"] = slice_df
+                set_idx += 1
+    return sets
+
+AUX_MAP = {
+    "be":   r"(?:am|is|are|was|were|be|being|been)",
+    "have": r"(?:have|has|had|having)",
+    "do":   r"(?:do|does|did|doing)",
+}
+
+def make_match_pattern(phrase: str) -> re.Pattern:
+    """Build a regex that matches the phrase in the sentence, handling be/have/do variants."""
+    ph = phrase.strip()
+    parts = ph.split()
+    if parts and parts[0].lower() in AUX_MAP and len(parts) > 1:
+        rest = re.escape(" ".join(parts[1:]))
+        head = AUX_MAP[parts[0].lower()]
+        pattern = rf"\b{head}\s+{rest}\b"
+    else:
         pattern = rf"\b{re.escape(ph)}\b"
     return re.compile(pattern, flags=re.IGNORECASE)
 
-def highlight_phrase(sentence: str, phrase: str, color="orange") -> str:
-    pat = make_highlight_pattern(phrase)
-    return pat.sub(lambda m: f"<span style='color:{color}; font-weight:bold'>{m.group(0)}</span>",
-                   sentence)
-    
-# ---------------- Helper: make a new quiz question ----------------
+def mask_phrase(sentence: str, phrase: str) -> str:
+    """
+    Replace the matched phrase with an underlined blank.
+    If not found, return the original sentence.
+    """
+    pat = make_match_pattern(phrase)
+    blank = "<span style='border-bottom:2px solid #222;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>"
+    return pat.sub(blank, sentence, count=1)
 
-def make_quiz_question():
-    chunk = sets[st.session_state.selected_set_idx]
-    # Pick a random row from this 10-word set
-    row = chunk.sample(1, random_state=random.randrange(0, 10_000)).iloc[0]
-    ans_word = str(row["Word"])
-    sentence = str(row["Sentence"])
-    translation = str(row["Translation"])
-
-    # Cloze the answer word once (underline blank)
-    pattern = r"\b" + re.escape(ans_word) + r"\b"
-    cloze_sentence = re.sub(
-        pattern, "<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>", sentence, count=1, flags=re.IGNORECASE
-    )
-
-    # Build options: 1 correct + 3 distractors from the same set, then "None of the above" at the end
-    words_pool = [str(w) for w in chunk["Word"].tolist()]
-    distractors = [w for w in words_pool if w.lower() != ans_word.lower()]
+def make_mcq_options(correct: str, pool: List[str], k_distractors: int = 3) -> List[str]:
+    """
+    Build 4 options from the set (1 correct + 3 distractors), plus 'None of the above' as the last option.
+    """
+    distractors = [w for w in pool if w != correct]
     random.shuffle(distractors)
-    distractors = distractors[:3] if len(distractors) >= 3 else distractors
+    distractors = distractors[:k_distractors]
+    opts = distractors + [correct]
+    random.shuffle(opts)  # randomize position of correct among first 4
+    opts.append("None of the above")  # always last
+    return opts
 
-    options = distractors + [ans_word]
-    random.shuffle(options)
-    options.append("None of the above")  # always last
+def reset_question():
+    st.session_state.current_q = None
+    st.session_state.user_choice = None
+    st.session_state.answered = False
 
-    st.session_state.quiz = {
-        "word": ans_word,
-        "sentence": sentence,
-        "sentence_cloze": cloze_sentence,
-        "translation": translation,
-        "options": options,
-    }
-    st.session_state.quiz_qid += 1
-    st.session_state.answer_shown = False
+# -------------------------------------------------
+# Load data and prepare sets
+# -------------------------------------------------
+df = load_data(CSV_URL)
+sets = build_sets(df, size=10)
+set_names = list(sets.keys())
 
-# ---------------- Tabs ----------------
-tab1, tab2, tab3 = st.tabs(["1️⃣ Select Words", "2️⃣ Learning", "3️⃣ Practice"])
+# -------------------------------------------------
+# App Title
+# -------------------------------------------------
+st.markdown("### 🐥 단어 학습 앱 (Multiple-Choice)")
 
-# ---------------- Tab 1: Select ----------------
+# -------------------------------------------------
+# Tabs
+# -------------------------------------------------
+tab1, tab2, tab3 = st.tabs(["1️⃣ Practice 1", "2️⃣ Practice 2", "3️⃣ Practice 3"])
+
+# -------------------------------------------------
+# Tab 1: Practice 1 (MCQ app from your old Tab 3)
+# -------------------------------------------------
 with tab1:
-    st.markdown("### ✨ Step 1: Choose a set, then pick words to practice")
+    st.markdown("#### 세트 선택")
+    if "selected_set" not in st.session_state:
+        st.session_state.selected_set = set_names[0] if set_names else None
+    if "current_q" not in st.session_state:
+        st.session_state.current_q = None
+    if "user_choice" not in st.session_state:
+        st.session_state.user_choice = None
+    if "answered" not in st.session_state:
+        st.session_state.answered = False
 
-    # Dropdown to select a 10-word set
-    current_index = (
-        st.session_state.selected_set_idx
-        if st.session_state.selected_set_idx < len(set_labels)
-        else 0
-    )
-    chosen_label = st.selectbox(
-        "📚 Select a 10-word set",
-        set_labels,
-        index=current_index,
-        key="word_set_select",
-    )
+    set_choice = st.selectbox("연습할 단어 세트를 선택하세요:", set_names, index=set_names.index(st.session_state.selected_set) if st.session_state.selected_set in set_names else 0)
+    if set_choice != st.session_state.selected_set:
+        st.session_state.selected_set = set_choice
+        reset_question()
 
-    # Detect changed set and reset selections when the set changes
-    new_index = set_labels.index(chosen_label)
-    if new_index != st.session_state.selected_set_idx:
-        st.session_state.selected_set_idx = new_index
-        st.session_state.selected_words = []
-        st.session_state.submitted = False
-        st.session_state.quiz = None  # reset quiz when set changes
+    cur_df = sets[st.session_state.selected_set].copy()
 
-    # The 10-word slice for this set
-    practice_df = sets[st.session_state.selected_set_idx]
+    st.divider()
+    st.markdown("#### 연습 시작")
 
-    st.caption("아래에서 연습할 단어를 체크하세요. **Tab 2**에서 뜻/예문/음성을 제공합니다.")
-
-    # Use a form to group the checkboxes & submit
-    with st.form("word_select_form"):
-        selected = []
-        for i, row in practice_df.iterrows():
-            cb_key = f"set{st.session_state.selected_set_idx}_word_{i}"
-            checked = st.checkbox(f"{row['Word']} ({row['Meaning']})", key=cb_key)
-            if checked:
-                selected.append(row["Word"])
-        submitted = st.form_submit_button("✨ 선택완료 버튼!")
-
-    if submitted:
-        st.session_state.selected_words = selected
-        st.session_state.submitted = True
-
-    # Feedback
-    if st.session_state.submitted:
-        count = len(st.session_state.selected_words)
-        if count > 0:
-            st.success(f"🎉 You selected {count} word(s) for practice:")
-            st.write(", ".join(st.session_state.selected_words))
-        else:
-            st.warning("⚠️ You did not select any words.")
-
-# ---------------- Tab 2: Practice ----------------
-with tab2:
-    st.markdown("### 🐧 Step 2: 자, 이제 선택한 단어들을 학습해 봅시다.")
-    if not st.session_state.submitted or len(st.session_state.selected_words) == 0:
-        st.info("Please go to **Tab 1** and select words first.")
-    else:
-        st.write(f"연습할 단어는 {len(st.session_state.selected_words)} 개입니다:")
-
-        for idx, word in enumerate(st.session_state.selected_words, start=1):
-            # Find the row for this word (search only within the selected set for robustness)
-            current_chunk = sets[st.session_state.selected_set_idx]
-            row = current_chunk[current_chunk["Word"] == word]
-            if row.empty:
-                # Fallback: search the whole df if not found in the chunk
-                row = df[df["Word"] == word]
-            row = row.iloc[0]
-
+    colA, colB = st.columns([1,1])
+    with colA:
+        if st.button("🟢 새 문제 시작 (Start)"):
+            # Pick a random target row from this set
+            row = cur_df.sample(1, random_state=random.randint(0, 10_000)).iloc[0]
+            target_word = str(row["Word"])
             sentence = str(row["Sentence"])
-            meaning = str(row["Meaning"])
             translation = str(row["Translation"])
 
-            highlighted_sentence = highlight_phrase(sentence, word)
+            # Build masked sentence (underline blank where phrase appears)
+            masked = mask_phrase(sentence, target_word)
+
+            # Build options (4 from set including correct + 'None of the above' as last)
+            pool_words = [str(w) for w in cur_df["Word"].tolist()]
+            options = make_mcq_options(target_word, pool_words, k_distractors=3)
+
+            # Save current question
+            st.session_state.current_q = {
+                "word": target_word,
+                "sentence": sentence,
+                "masked": masked,
+                "translation": translation,
+                "options": options
+            }
+            st.session_state.user_choice = None
+            st.session_state.answered = False
+
+    with colB:
+        if st.button("🔁 초기화 (Reset)"):
+            reset_question()
+
+    st.write("")  # spacing
+
+    if st.session_state.current_q is None:
+        st.info("‘새 문제 시작’ 버튼을 눌러 연습을 시작하세요.")
+    else:
+        q = st.session_state.current_q
+
+        # Show sentence (masked) and translation
+        st.markdown(
+            f"<div style='font-size:16px; line-height:1.6'><b>문장:</b> {q['masked']}</div>",
+            unsafe_allow_html=True
+        )
+        st.markdown(
+            f"<div style='color:gray;'>( {q['translation']} )</div>",
+            unsafe_allow_html=True
+        )
+
+        # The question prompt
+        st.markdown("**문항:** 다음 문장의 의미로 보아 밑줄 친 부분에 들어갈 가장 적절한 단어는?")
+
+        # Options (radio)
+        st.session_state.user_choice = st.radio(
+            "정답을 선택하세요:",
+            q["options"],
+            index=None,
+            key="mcq_choice",
+        )
+
+        # Answer button
+        if st.button("정답 확인 (Show me the answer)"):
+            if st.session_state.user_choice is None:
+                st.warning("먼저 보기를 선택하세요.")
+            else:
+                st.session_state.answered = True
+                if st.session_state.user_choice == q["word"]:
+                    st.success("Correct ✅")
+                    st.balloons()
+                else:
+                    st.error(f"Incorrect ❌  |  정답: {q['word']}")
+
+        # Optional: reveal full sentence with highlight after answering
+        if st.session_state.answered:
+            # Highlight the actual phrase in the original sentence
+            def highlight_phrase(sentence: str, phrase: str, color="orange") -> str:
+                pat = make_match_pattern(phrase)
+                return pat.sub(lambda m: f"<span style='color:{color}; font-weight:bold'>{m.group(0)}</span>", sentence)
+
+            highlighted = highlight_phrase(q["sentence"], q["word"])
+            st.markdown("**원문 표시:**", unsafe_allow_html=True)
             st.markdown(
-                f"예문: <i>{highlighted_sentence}</i> "
-                f"<span style='color:gray'>({translation})</span>",
+                f"<div style='font-size:16px; line-height:1.6'>{highlighted}</div>",
                 unsafe_allow_html=True
             )
 
-            # Display word, meaning, example, translation, and audio
-            st.markdown(f"### {idx}. {word}")
-            st.markdown(
-                f"<span style='color:gray'><b>뜻:</b> {meaning}</span>",
-                unsafe_allow_html=True,
-            )
-            st.markdown(
-                f"예문: <i>{highlighted_sentence}</i> "
-                f"<span style='color:gray'>({translation})</span>",
-                unsafe_allow_html=True,
-            )
+# -------------------------------------------------
+# Tab 2 & 3: placeholders
+# -------------------------------------------------
+with tab2:
+    st.markdown("### Practice 2")
+    st.info("이 탭은 추후에 연습 2 기능을 추가할 예정입니다.")
 
-            # Generate and play audio using gTTS
-            try:
-                tts = gTTS(sentence)
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
-                    tts.save(fp.name)
-                    st.audio(fp.name, format="audio/mp3")
-            except Exception as e:
-                st.warning(f"Audio unavailable for this sentence. ({e})")
-
-            st.write("---")
-
-# ---------------- Tab 3: Quiz (from the 10-word set) ----------------
 with tab3:
-    st.markdown("### 😍 Let's practice: 맥락에 맞는 단어 찾기")
-    st.write("설명: 현재 세트에 포함된 10개 단어를 가지고 연습합니다. ")
-
-    # Start/Next button
-    if st.button("🎯 문제 시작 / 다음 문제"):
-        make_quiz_question()
-    
-    st.markdown("**Q:** 다음 문장의 의미로 보아 밑줄 친 부분에 들어갈 가장 적절한 단어는?")
-    
-    # If we have a quiz question, render it
-    if st.session_state.quiz:
-        q = st.session_state.quiz
-
-        # Show sentence (font size 16) with cloze underline
-        st.markdown(
-            f"<div style='font-size:18px;'><b>{q['sentence_cloze']}</b></div>",
-            unsafe_allow_html=True,
-        )
-        # Show translation in gray, in parentheses
-        st.markdown(
-            f"<div style='color:gray;'>( {q['translation']} )</div>",
-            unsafe_allow_html=True,
-        )
-
-        
-        # Options (last one is always "None of the above")
-        choice = st.radio(
-            "정답 선택",
-            q["options"],
-            key=f"quiz_choice_{st.session_state.quiz_qid}",
-            label_visibility="collapsed",
-        )
-
-        if st.button("✅ 정답 보기", key=f"show_answer_{st.session_state.quiz_qid}"):
-            st.session_state.answer_shown = True
-            correct = (choice == q["word"])
-            if correct:
-                st.success("정답입니다! 🎉")
-                key = f"balloons_{st.session_state.quiz_qid}"
-                if not st.session_state.get(key, False):
-                    st.balloons()
-                    st.session_state[key] = True
-            else:
-                st.error(f"아쉽습니다. 정답은 **{q['word']}** 입니다.")
-
-
-    else:
-        st.info("상단의 **문제 시작 / 다음 문제** 버튼을 눌러 퀴즈를 시작하세요.")
+    st.markdown("### Practice 3")
+    st.info("이 탭은 추후에 연습 3 기능을 추가할 예정입니다.")
