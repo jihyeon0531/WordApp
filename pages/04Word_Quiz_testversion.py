@@ -87,7 +87,7 @@ def make_quiz_question():
     st.session_state.answer_shown = False
 
 # ---------------- Tabs ----------------
-tab1, tab2, tab3 = st.tabs(["1️⃣ Select Words", "2️⃣ Practice", "3️⃣ Quiz"])
+tab1, tab2, tab3 = st.tabs(["1️⃣ Select Words", "2️⃣ Learning", "3️⃣ Practice"])
 
 # ---------------- Tab 1: Select ----------------
 with tab1:
