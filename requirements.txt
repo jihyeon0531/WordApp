@@ -3,3 +3,4 @@ pandas
 gtts
 PIL
 wordcloud
+matplotlib
