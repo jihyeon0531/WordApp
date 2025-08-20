@@ -1,6 +1,4 @@
-# Memo
-
-# Update log
+# 🐳Update log
 
 |Date|Version|Wordapp|Wordapp1|What's Updated|Status|
 |--|--|--|--|--|--|
