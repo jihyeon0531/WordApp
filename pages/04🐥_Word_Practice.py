@@ -113,7 +113,7 @@ st.markdown("### 🐥 단어 연습 앱 (Word Practice App)")
 # -------------------------------------------------
 # Tabs
 # -------------------------------------------------
-tab1, tab2, tab3 = st.tabs(["1️⃣ Practice 1", "2️⃣ Practice 2", "3️⃣ Practice 3"])
+tab1, tab2, tab3 = st.tabs(["1️⃣ Practice 1: 문장속 단어", "2️⃣ Practice 2", "3️⃣ Practice 3"])
 
 # -------------------------------------------------
 # Tab 1: Practice 1 (MCQ app from your old Tab 3)
