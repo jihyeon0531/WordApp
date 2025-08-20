@@ -241,7 +241,7 @@ with tab1:
     # Completion banner
     if st.session_state.completed_q1:
         st.success("🎉 이 세트의 10개 단어를 모두 완료했습니다! 다시 연습하려면 ‘초기화’를 누르세요.")
-        st.balloons()
+        
 
     if st.session_state.current_q1 and not st.session_state.completed_q1:
         q = st.session_state.current_q1
@@ -270,7 +270,7 @@ with tab1:
                 st.session_state.answered_q1 = True
                 if st.session_state.user_choice_q1 == q["word"]:
                     st.success("Correct ✅")
-                    st.balloons()
+                    
                     # mark solved
                     st.session_state.solved_q1.add(q["word"])
                     st.session_state.solved_current_q1 = True
@@ -278,6 +278,7 @@ with tab1:
                     remaining_after = [w for w in st.session_state.remaining_q1 if w not in st.session_state.solved_q1]
                     if not remaining_after:
                         st.session_state.completed_q1 = True
+                        st.balloons()
                 else:
                     st.error(f"Incorrect ❌  |  정답: {q['word']} (다시 시도하세요. ‘새 문제 시작’을 눌러도 현재 문항이 유지됩니다.)")
 
@@ -351,7 +352,7 @@ with tab2:
     # Completion banner
     if st.session_state.completed_q2:
         st.success("🎉 이 세트의 10개 단어(듣고 쓰기)를 모두 완료했습니다! 다시 연습하려면 ‘초기화’를 누르세요.")
-        st.balloons()
+        
 
     if st.session_state.current_q2 and not st.session_state.completed_q2:
         q2 = st.session_state.current_q2
@@ -377,13 +378,14 @@ with tab2:
             st.session_state.answered_q2 = True
             if user_norm and user_norm == correct_norm:
                 st.success("Correct ✅")
-                st.balloons()
+                
                 # mark solved
                 st.session_state.solved_q2.add(q2["word"])
                 st.session_state.solved_current_q2 = True
                 remaining_after = [w for w in st.session_state.remaining_q2 if w not in st.session_state.solved_q2]
                 if not remaining_after:
                     st.session_state.completed_q2 = True
+                    st.balloons()
             else:
                 st.error(f"Incorrect ❌  |  정답: {q2['word']} (다시 시도하세요. ‘새 문제 시작’을 눌러도 현재 문항이 유지됩니다.)")
 
