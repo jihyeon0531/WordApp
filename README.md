@@ -1,4 +1,4 @@
-# Word learning App
+# Word learning App design
 
 + Fall 2025: 8~10 trials (?)
 + 13 classes (6 classes will have 2 credits)
