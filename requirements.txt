@@ -1,9 +1,8 @@
 streamlit
 pandas
-gtts
-PIL
-wordcloud
-matplotlib
 numpy
+matplotlib
+wordcloud
+gtts
 qrcode
 pillow
