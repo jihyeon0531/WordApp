@@ -4,3 +4,5 @@ gtts
 PIL
 wordcloud
 matplotlib
+numpy
+qrcode
