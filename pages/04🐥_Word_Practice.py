@@ -14,8 +14,8 @@ from gtts import gTTS
 st.set_page_config(page_title="Word Practice")
 
 CSV_URL = "https://raw.githubusercontent.com/jihyeon0531/WordApp/refs/heads/main/data/wdata01.csv"
-# Expected columns in CSV: Word, Meaning, Sentence, Translation
-# Optionally, a Set column (e.g., Set = 1,2,3...), otherwise chunk by 10 rows as one set.
+# Expected columns: Word, Meaning, Sentence, Translation
+# Optional: Set column (Set / set / SetID / Set_Id / SetName)
 
 # -------------------------------------------------
 # Helpers
@@ -59,7 +59,7 @@ AUX_MAP = {
 }
 
 def make_match_pattern(phrase: str) -> re.Pattern:
-    """Regex that matches the phrase in the sentence, handling be/have/do variants."""
+    """Regex that matches the phrase, handling be/have/do variants."""
     ph = phrase.strip()
     parts = ph.split()
     if parts and parts[0].lower() in AUX_MAP and len(parts) > 1:
@@ -71,13 +71,13 @@ def make_match_pattern(phrase: str) -> re.Pattern:
     return re.compile(pattern, flags=re.IGNORECASE)
 
 def mask_phrase(sentence: str, phrase: str) -> str:
-    """Replace the matched phrase with an underlined blank once."""
+    """Replace matched phrase with an underlined blank once."""
     pat = make_match_pattern(phrase)
     blank = "<span style='border-bottom:2px solid #222;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>"
     return pat.sub(blank, sentence, count=1)
 
 def make_mcq_options(correct: str, pool: List[str], k_distractors: int = 3) -> List[str]:
-    """4 options (1 correct + 3 distractors) + 'None of the above' as last option."""
+    """4 options (1 correct + 3 distractors) + 'None of the above' last."""
     distractors = [w for w in pool if w != correct]
     random.shuffle(distractors)
     distractors = distractors[:k_distractors]
@@ -85,17 +85,6 @@ def make_mcq_options(correct: str, pool: List[str], k_distractors: int = 3) -> L
     random.shuffle(opts)
     opts.append("None of the above")
     return opts
-
-def reset_q1():
-    st.session_state.current_q1 = None
-    st.session_state.user_choice_q1 = None
-    st.session_state.answered_q1 = False
-
-def reset_q2():
-    st.session_state.current_q2 = None
-    st.session_state.user_spelling = ""
-    st.session_state.answered_q2 = False
-    st.session_state.audio_bytes_q2 = None
 
 def tts_mp3(word: str, lang: str = "en") -> bytes:
     """Generate TTS MP3 bytes for the given word/phrase."""
@@ -108,6 +97,30 @@ def tts_mp3(word: str, lang: str = "en") -> bytes:
 def normalize_answer(s: str) -> str:
     """Lowercase and remove spaces/punctuation for robust matching."""
     return re.sub(r"[^a-z0-9]+", "", s.lower())
+
+# ---------------- State resetters ----------------
+def reset_all_for_set_change():
+    reset_q1_all()
+    reset_q2_all()
+
+def reset_q1_all():
+    st.session_state.current_q1 = None
+    st.session_state.user_choice_q1 = None
+    st.session_state.answered_q1 = False
+    st.session_state.solved_q1 = set()
+    st.session_state.remaining_q1 = []
+    st.session_state.completed_q1 = False
+    st.session_state.solved_current_q1 = False
+
+def reset_q2_all():
+    st.session_state.current_q2 = None
+    st.session_state.user_spelling = ""
+    st.session_state.answered_q2 = False
+    st.session_state.audio_bytes_q2 = None
+    st.session_state.solved_q2 = set()
+    st.session_state.remaining_q2 = []
+    st.session_state.completed_q2 = False
+    st.session_state.solved_current_q2 = False
 
 # -------------------------------------------------
 # Load data and prepare sets
@@ -124,63 +137,113 @@ st.markdown("### 🐥 단어 연습 앱 (Word Practice App)")
 # -------------------------------------------------
 # Tabs
 # -------------------------------------------------
-tab1, tab2, tab3 = st.tabs(["1️⃣ Practice 1: 문장 속 단어", "2️⃣ Practice 2: 듣고 써보기", "3️⃣ Practice 3"])
+tab1, tab2, tab3 = st.tabs(["1️⃣ Practice 1: 문장 속 단어", "2️⃣ Practice 2: 스펠링연습", "3️⃣ Practice 3"])
+
+# -------------------------------------------------
+# Init shared and tab-specific state
+# -------------------------------------------------
+if "selected_set" not in st.session_state:
+    st.session_state.selected_set = set_names[0] if set_names else None
+
+# Tab1 state
+for key, default in [
+    ("current_q1", None),
+    ("user_choice_q1", None),
+    ("answered_q1", False),
+    ("solved_q1", set()),
+    ("remaining_q1", []),
+    ("completed_q1", False),
+    ("solved_current_q1", False),
+]:
+    if key not in st.session_state:
+        st.session_state[key] = default
+
+# Tab2 state
+for key, default in [
+    ("current_q2", None),
+    ("user_spelling", ""),
+    ("answered_q2", False),
+    ("audio_bytes_q2", None),
+    ("solved_q2", set()),
+    ("remaining_q2", []),
+    ("completed_q2", False),
+    ("solved_current_q2", False),
+]:
+    if key not in st.session_state:
+        st.session_state[key] = default
 
 # -------------------------------------------------
 # Tab 1: 문장 속 단어 (MCQ)
 # -------------------------------------------------
 with tab1:
     st.markdown("#### 1. 세트 선택")
-    if "selected_set" not in st.session_state:
-        st.session_state.selected_set = set_names[0] if set_names else None
-    if "current_q1" not in st.session_state:
-        st.session_state.current_q1 = None
-    if "user_choice_q1" not in st.session_state:
-        st.session_state.user_choice_q1 = None
-    if "answered_q1" not in st.session_state:
-        st.session_state.answered_q1 = False
-
     set_choice = st.selectbox(
         "Choose a word set to practice:",
         set_names,
         index=set_names.index(st.session_state.selected_set) if st.session_state.selected_set in set_names else 0,
         key="set_select_q1",
     )
+
     if set_choice != st.session_state.selected_set:
         st.session_state.selected_set = set_choice
-        reset_q1()
-        reset_q2()  # keep both tabs in sync when set changes
+        # rebuild remaining lists for both tabs
+        cur_df = sets[st.session_state.selected_set].copy()
+        st.session_state.remaining_q1 = list(cur_df["Word"])
+        st.session_state.remaining_q2 = list(cur_df["Word"])
+        reset_all_for_set_change()
 
     cur_df = sets[st.session_state.selected_set].copy()
+    if not st.session_state.remaining_q1:
+        st.session_state.remaining_q1 = list(cur_df["Word"])
 
     st.markdown("#### 2. 연습 시작")
     colA, colB = st.columns([1, 1])
+
     with colA:
         if st.button("🍅 새 문제 시작 (Start)", key="start_q1"):
-            row = cur_df.sample(1, random_state=random.randint(0, 10_000)).iloc[0]
-            target_word = str(row["Word"])
-            sentence = str(row["Sentence"])
-            translation = str(row["Translation"])
-            masked = mask_phrase(sentence, target_word)
-            pool_words = [str(w) for w in cur_df["Word"].tolist()]
-            options = make_mcq_options(target_word, pool_words, k_distractors=3)
-            st.session_state.current_q1 = {
-                "word": target_word,
-                "sentence": sentence,
-                "masked": masked,
-                "translation": translation,
-                "options": options
-            }
-            st.session_state.user_choice_q1 = None
-            st.session_state.answered_q1 = False
+            if st.session_state.completed_q1:
+                st.info("이 세트의 모든 문항을 완료했습니다. 🔒 ‘초기화’로 다시 시작할 수 있어요.")
+            else:
+                # Only pick a new question if the current one is already solved or doesn't exist
+                if (st.session_state.current_q1 is None) or st.session_state.solved_current_q1:
+                    # Pick from remaining (unsolved) words
+                    remaining = [w for w in st.session_state.remaining_q1 if w not in st.session_state.solved_q1]
+                    if not remaining:
+                        st.session_state.completed_q1 = True
+                    else:
+                        target_word = random.choice(remaining)
+                        row = cur_df[cur_df["Word"] == target_word].iloc[0]
+                        sentence = str(row["Sentence"])
+                        translation = str(row["Translation"])
+                        masked = mask_phrase(sentence, target_word)
+                        pool_words = [str(w) for w in cur_df["Word"].tolist()]
+                        options = make_mcq_options(target_word, pool_words, k_distractors=3)
+                        st.session_state.current_q1 = {
+                            "word": target_word,
+                            "sentence": sentence,
+                            "masked": masked,
+                            "translation": translation,
+                            "options": options
+                        }
+                        st.session_state.user_choice_q1 = None
+                        st.session_state.answered_q1 = False
+                        st.session_state.solved_current_q1 = False
+                else:
+                    # current question stays (repeat until correct)
+                    pass
 
     with colB:
         if st.button("🔁 초기화 (Reset)", key="reset_q1"):
-            reset_q1()
+            reset_q1_all()
+            st.session_state.remaining_q1 = list(cur_df["Word"])
+            st.success("이 세트를 초기화했습니다.")
 
-    if st.session_state.current_q1 is None:
-        st.info("‘새 문제 시작’ 버튼을 눌러 연습을 시작하세요.")
-    else:
+    # Completion banner
+    if st.session_state.completed_q1:
+        st.success("🎉 이 세트의 10개 단어를 모두 완료했습니다! 다시 연습하려면 ‘초기화’를 누르세요.")
+        st.balloons()
+
+    if st.session_state.current_q1 and not st.session_state.completed_q1:
         q = st.session_state.current_q1
         st.divider()
         st.markdown("**Q:** 다음 문장의 의미로 보아 밑줄 친 부분에 들어갈 가장 적절한 단어는?")
@@ -208,8 +271,15 @@ with tab1:
                 if st.session_state.user_choice_q1 == q["word"]:
                     st.success("Correct ✅")
                     st.balloons()
+                    # mark solved
+                    st.session_state.solved_q1.add(q["word"])
+                    st.session_state.solved_current_q1 = True
+                    # if all solved, complete the set
+                    remaining_after = [w for w in st.session_state.remaining_q1 if w not in st.session_state.solved_q1]
+                    if not remaining_after:
+                        st.session_state.completed_q1 = True
                 else:
-                    st.error(f"Incorrect ❌  |  정답: {q['word']}")
+                    st.error(f"Incorrect ❌  |  정답: {q['word']} (다시 시도하세요. ‘새 문제 시작’을 눌러도 현재 문항이 유지됩니다.)")
 
         if st.session_state.answered_q1:
             def highlight_phrase(sentence: str, phrase: str, color="orange") -> str:
@@ -222,20 +292,15 @@ with tab1:
                 unsafe_allow_html=True
             )
 
+    # Progress
+    if st.session_state.remaining_q1:
+        st.caption(f"진행 상황: {len(st.session_state.solved_q1)}/{len(st.session_state.remaining_q1)} 완료")
+
 # -------------------------------------------------
-# Tab 2: 듣고 스펠링 입력 (대소문자/공백/문장부호 무시)
+# Tab 2: 듣고 스펠링 (대소문자/공백/문장부호 무시)
 # -------------------------------------------------
 with tab2:
     st.markdown("#### 1. 세트 선택")
-    if "current_q2" not in st.session_state:
-        st.session_state.current_q2 = None
-    if "user_spelling" not in st.session_state:
-        st.session_state.user_spelling = ""
-    if "answered_q2" not in st.session_state:
-        st.session_state.answered_q2 = False
-    if "audio_bytes_q2" not in st.session_state:
-        st.session_state.audio_bytes_q2 = None
-
     set_choice2 = st.selectbox(
         "Choose a word set to practice:",
         set_names,
@@ -244,42 +309,59 @@ with tab2:
     )
     if set_choice2 != st.session_state.selected_set:
         st.session_state.selected_set = set_choice2
-        reset_q1()
-        reset_q2()
+        cur_df2 = sets[st.session_state.selected_set].copy()
+        st.session_state.remaining_q1 = list(cur_df2["Word"])
+        st.session_state.remaining_q2 = list(cur_df2["Word"])
+        reset_all_for_set_change()
 
     cur_df2 = sets[st.session_state.selected_set].copy()
+    if not st.session_state.remaining_q2:
+        st.session_state.remaining_q2 = list(cur_df2["Word"])
 
     st.markdown("#### 2. 연습 시작")
     colC, colD = st.columns([1, 1])
     with colC:
         if st.button("🔊 새 문제 시작 (Start & Listen)", key="start_q2"):
-            row = cur_df2.sample(1, random_state=random.randint(0, 10_000)).iloc[0]
-            target_word = str(row["Word"])
-            # generate audio for the word/phrase
-            audio_bytes = tts_mp3(target_word, lang="en")
-            st.session_state.current_q2 = {
-                "word": target_word
-            }
-            st.session_state.audio_bytes_q2 = audio_bytes
-            st.session_state.user_spelling = ""
-            st.session_state.answered_q2 = False
+            if st.session_state.completed_q2:
+                st.info("이 세트의 모든 문항을 완료했습니다. 🔒 ‘초기화’로 다시 시작할 수 있어요.")
+            else:
+                # Only pick new if current solved or none
+                if (st.session_state.current_q2 is None) or st.session_state.solved_current_q2:
+                    remaining = [w for w in st.session_state.remaining_q2 if w not in st.session_state.solved_q2]
+                    if not remaining:
+                        st.session_state.completed_q2 = True
+                    else:
+                        target_word = random.choice(remaining)
+                        audio_bytes = tts_mp3(target_word, lang="en")
+                        st.session_state.current_q2 = {"word": target_word}
+                        st.session_state.audio_bytes_q2 = audio_bytes
+                        st.session_state.user_spelling = ""
+                        st.session_state.answered_q2 = False
+                        st.session_state.solved_current_q2 = False
+                else:
+                    # keep current until solved
+                    pass
 
     with colD:
         if st.button("🔁 초기화 (Reset)", key="reset_q2"):
-            reset_q2()
+            reset_q2_all()
+            st.session_state.remaining_q2 = list(cur_df2["Word"])
+            st.success("이 세트를 초기화했습니다.")
 
-    if st.session_state.current_q2 is None:
-        st.info("‘새 문제 시작’ 버튼을 눌러 단어를 듣고 스펠링을 입력하세요.")
-    else:
+    # Completion banner
+    if st.session_state.completed_q2:
+        st.success("🎉 이 세트의 10개 단어(듣고 쓰기)를 모두 완료했습니다! 다시 연습하려면 ‘초기화’를 누르세요.")
+        st.balloons()
+
+    if st.session_state.current_q2 and not st.session_state.completed_q2:
         q2 = st.session_state.current_q2
 
-        # Audio player (replayable)
+        # Audio (replayable)
         if st.session_state.audio_bytes_q2:
             st.audio(st.session_state.audio_bytes_q2, format="audio/mp3")
         else:
-            st.warning("오디오를 불러오는 중 문제가 발생했습니다. 다시 시작해 주세요.")
+            st.warning("오디오 로드에 문제가 발생했습니다. 다시 시작해 주세요.")
 
-        # Input spelling
         st.write("")
         st.markdown("**Q:** 들은 단어(또는 어구)의 스펠링을 입력하세요.")
         st.session_state.user_spelling = st.text_input(
@@ -289,17 +371,25 @@ with tab2:
             placeholder="예: be good at",
         )
 
-        # Check answer (ignore case, spaces, punctuation)
         if st.button("정답 확인 (Check spelling)", key="check_q2"):
             user_norm = normalize_answer(st.session_state.user_spelling)
             correct_norm = normalize_answer(q2["word"])
-
             st.session_state.answered_q2 = True
             if user_norm and user_norm == correct_norm:
                 st.success("Correct ✅")
                 st.balloons()
+                # mark solved
+                st.session_state.solved_q2.add(q2["word"])
+                st.session_state.solved_current_q2 = True
+                remaining_after = [w for w in st.session_state.remaining_q2 if w not in st.session_state.solved_q2]
+                if not remaining_after:
+                    st.session_state.completed_q2 = True
             else:
-                st.error(f"Incorrect ❌  |  정답: {q2['word']}")
+                st.error(f"Incorrect ❌  |  정답: {q2['word']} (다시 시도하세요. ‘새 문제 시작’을 눌러도 현재 문항이 유지됩니다.)")
+
+    # Progress
+    if st.session_state.remaining_q2:
+        st.caption(f"진행 상황: {len(st.session_state.solved_q2)}/{len(st.session_state.remaining_q2)} 완료")
 
 # -------------------------------------------------
 # Tab 3: Placeholder (추후 확장)
