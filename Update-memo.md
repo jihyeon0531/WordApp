@@ -3,8 +3,8 @@
 |Date|Version|Wordapp|Wordapp1|What's Updated|Status|
 |--|--|--|--|--|--|
 |0820|ver.1.0|O||Menu: wordlist, word learning, word practice|OK|
-|0821|ver.2.0|O|O|dataset is changed: we use 'Set' column[^1]|OK|
-|0821|ver.2.0||O|Menu: Wordlist, File to download[^2]|OK|
+|0820|ver.2.0|O|O|dataset is changed: we use 'Set' column[^1]|OK|
+|0820|ver.2.0||O|Menu: Wordlist, File to download[^2]|OK|
 |0821|ver.2.1|O||Menu added: Class apps (QR code generator, timer, wordcloud, TTS) [^3]|OK|
 |0821|ver.2.1||O|dataset is changed: we use 'Set' column|OK|
 |0821|ver.2.2|O|O|dataset pdf file is linked.|OK|
