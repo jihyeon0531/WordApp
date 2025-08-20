@@ -12,7 +12,6 @@ df = pd.read_csv(CSV_URL)
 # Display without index
 st.dataframe(df, hide_index=True)
 
-st.table(df.style.hide(axis="index"))
 
 # Create tabs
 tab1, tab2 = st.tabs(["🐾 1. 설명페이지", "🐋 2. Word list"])
