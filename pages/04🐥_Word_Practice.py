@@ -245,7 +245,7 @@ with tab1:
 
     if st.session_state.current_q1 and not st.session_state.completed_q1:
         q = st.session_state.current_q1
-        st.divider()
+        # st.divider()
         st.markdown("**Q:** 다음 문장의 의미로 보아 밑줄 친 부분에 들어갈 가장 적절한 단어는?")
         st.markdown(
             f"<div style='font-size:16px; line-height:1.6'><b>문장:</b> {q['masked']}</div>",
