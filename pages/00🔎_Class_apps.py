@@ -8,7 +8,7 @@ from wordcloud import WordCloud
 import streamlit.components.v1 as components  # For embedding YouTube videos
 from gtts import gTTS
 import io
-from streamlit_drawable_canvas import st_canvas
+
 
 # Function to create word cloud
 def create_wordcloud(text):
