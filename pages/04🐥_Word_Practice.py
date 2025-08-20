@@ -242,7 +242,7 @@ with tab1:
     colA, colB = st.columns([1, 1])
 
     with colA:
-        if st.button("🍅 새 문제 시작 (Start)", key="start_q1"):
+        if st.button("🍅 Start / Continue", key="start_q1"):
             if st.session_state.completed_q1:
                 st.info("이 세트의 모든 문항을 완료했습니다. 🔒 ‘초기화’로 다시 시작할 수 있어요.")
             else:
@@ -353,7 +353,7 @@ with tab2:
     st.markdown("#### 2. 연습 시작")
     colC, colD = st.columns([1, 1])
     with colC:
-        if st.button("🔊 새 문제 시작 (Start & Listen)", key="start_q2"):
+        if st.button("🍅 Start / Continue", key="start_q2"):
             if st.session_state.completed_q2:
                 st.info("이 세트의 모든 문항을 완료했습니다. 🔒 ‘초기화’로 다시 시작할 수 있어요.")
             else:
@@ -441,7 +441,7 @@ with tab3:
     colE, colF = st.columns([1, 1])
 
     with colE:
-        if st.button("🍀 새 문제 시작 (Start)", key="start_q3"):
+        if st.button("🍅 Start / Continue", key="start_q3"):
             if st.session_state.completed_q3:
                 st.info("이 세트의 모든 문항을 완료했습니다. 🔒 ‘초기화’로 다시 시작할 수 있어요.")
             else:
