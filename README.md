@@ -10,6 +10,7 @@
 |Class|N of students|Treatment slots|Remark|
 |--|--|--|--|
 |2-1|23|10*8|Example|
+|2-2|25|10*7|모르겠당|
 
 # Pre-test survey item = Post-test survey item
 
