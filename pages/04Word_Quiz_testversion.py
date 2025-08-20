@@ -226,14 +226,18 @@ with tab3:
             label_visibility="collapsed",
         )
 
-        # Answer button
         if st.button("✅ 정답 보기", key=f"show_answer_{st.session_state.quiz_qid}"):
             st.session_state.answer_shown = True
             correct = (choice == q["word"])
             if correct:
                 st.success("정답입니다! 🎉")
+                key = f"balloons_{st.session_state.quiz_qid}"
+                if not st.session_state.get(key, False):
+                    st.balloons()
+                    st.session_state[key] = True
             else:
                 st.error(f"아쉽습니다. 정답은 **{q['word']}** 입니다.")
+
 
     else:
         st.info("상단의 **문제 시작 / 다음 문제** 버튼을 눌러 퀴즈를 시작하세요.")
