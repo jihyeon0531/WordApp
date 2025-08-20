@@ -177,6 +177,9 @@ with tab1:
     else:
         q = st.session_state.current_q
 
+
+        # The question prompt
+        st.markdown("**Q:** 다음 문장의 의미로 보아 밑줄 친 부분에 들어갈 가장 적절한 단어는?")
         # Show sentence (masked) and translation
         st.markdown(
             f"<div style='font-size:16px; line-height:1.6'><b>문장:</b> {q['masked']}</div>",
@@ -187,8 +190,6 @@ with tab1:
             unsafe_allow_html=True
         )
 
-        # The question prompt
-        st.markdown("**문항:** 다음 문장의 의미로 보아 밑줄 친 부분에 들어갈 가장 적절한 단어는?")
 
         # Options (radio)
         st.session_state.user_choice = st.radio(
