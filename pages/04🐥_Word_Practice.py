@@ -129,7 +129,7 @@ with tab1:
     if "answered" not in st.session_state:
         st.session_state.answered = False
 
-    set_choice = st.selectbox("연습할 단어 세트를 선택하세요:", set_names, index=set_names.index(st.session_state.selected_set) if st.session_state.selected_set in set_names else 0)
+    set_choice = st.selectbox("Choose a word set to practice:", set_names, index=set_names.index(st.session_state.selected_set) if st.session_state.selected_set in set_names else 0)
     if set_choice != st.session_state.selected_set:
         st.session_state.selected_set = set_choice
         reset_question()
