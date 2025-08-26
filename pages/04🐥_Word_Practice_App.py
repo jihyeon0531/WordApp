@@ -3,7 +3,7 @@ import random
 import re
 import io
 from typing import List, Dict
-
+from datetime import datetime
 import pandas as pd
 import streamlit as st
 from gtts import gTTS
@@ -12,6 +12,12 @@ from gtts import gTTS
 # Config
 # -------------------------------------------------
 st.set_page_config(page_title="Word Practice")
+# Version checking
+st.caption(f"Build: practice_mcq_app.py | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+if st.button("🔄 Force rerun"):
+    st.rerun()
+
 
 CSV_URL = "https://raw.githubusercontent.com/jihyeon0531/WordApp/refs/heads/main/data/2025_Ch6_8_0819.csv"
 # Expected columns: Word, Meaning, Sentence, Translation
