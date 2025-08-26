@@ -2,8 +2,10 @@
 import random
 import re
 import io
+import os
 from typing import List, Dict
 from datetime import datetime
+
 import pandas as pd
 import streamlit as st
 from gtts import gTTS
@@ -12,36 +14,50 @@ from gtts import gTTS
 # Config
 # -------------------------------------------------
 st.set_page_config(page_title="Word Practice")
-# Version checking
-st.caption(f"Build: practice_mcq_app.py | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
-if st.button("🔄 Force rerun"):
+# -------------------------------------------------
+# Sidebar: version + controls
+# -------------------------------------------------
+st.sidebar.caption(f"Build: practice_mcq_app.py | {datetime.now():%Y-%m-%d %H:%M:%S}")
+st.sidebar.caption(f"Streamlit {st.__version__}")
+st.sidebar.caption(f"Running file: {__file__}")
+st.sidebar.caption(f"WD: {os.getcwd()}")
+
+# Force rerun (this session only)
+if st.sidebar.button("🔄 Force rerun", key="force_rerun_btn"):
     st.rerun()
 
+# Clear ONLY my session_state (safe for multi-user)
+if st.sidebar.button("🧹 Clear my session", key="wipe_state_btn"):
+    for k in list(st.session_state.keys()):
+        del st.session_state[k]
+    st.sidebar.success("Session state cleared.")
+    st.rerun()
 
+# Clear app-wide data cache (affects ALL users)
+if st.sidebar.button("♻️ Refresh data (clear cache)", key="clear_cache_btn"):
+    st.cache_data.clear()
+    st.sidebar.success("Data cache cleared (global).")
+    st.rerun()
+
+# -------------------------------------------------
+# Data
+# -------------------------------------------------
 CSV_URL = "https://raw.githubusercontent.com/jihyeon0531/WordApp/refs/heads/main/data/2025_Ch6_8_0819.csv"
-# Expected columns: Word, Meaning, Sentence, Translation
-# Optional: Set column (Set / set / SetID / Set_Id / SetName)
+# Expected columns: Set, Word, Meaning, Sentence, Translation
 
-# -------------------------------------------------
-# Helpers
-# -------------------------------------------------
+# Cached CSV loader
+@st.cache_data(ttl=300)
 def load_data(url: str) -> pd.DataFrame:
     df = pd.read_csv(url)
-    needed = ["Word", "Meaning", "Sentence", "Translation", "Set"]  # <- require Set
+    needed = ["Word", "Meaning", "Sentence", "Translation", "Set"]
     for col in needed:
         if col not in df.columns:
             raise ValueError(f"CSV is missing required column: {col}")
-    # keep only the columns we use
     return df[["Set", "Word", "Meaning", "Sentence", "Translation"]].copy()
 
-
 def build_sets(df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
-    """
-    Group strictly by the 'Set' column (e.g., set1..set6) and return
-    an ordered dict-like mapping: set name -> DataFrame slice.
-    """
-    # sort groups by the numeric part of 'setX'
+    """Group by 'Set' and return ordered mapping: set name -> DataFrame slice."""
     def _set_sort_key(val):
         m = re.search(r"\d+", str(val))
         return int(m.group()) if m else float("inf")
@@ -52,7 +68,9 @@ def build_sets(df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
         sets[str(set_name)] = g.reset_index(drop=True)
     return sets
 
-
+# -------------------------------------------------
+# Text utilities
+# -------------------------------------------------
 AUX_MAP = {
     "be":   r"(?:am|is|are|was|were|be|being|been)",
     "have": r"(?:have|has|had|having)",
@@ -88,9 +106,7 @@ def make_mcq_options(correct: str, pool: List[str], k_distractors: int = 3) -> L
     return opts
 
 def make_k_options_including_correct(correct: str, pool: List[str], k: int = 5) -> List[str]:
-    """
-    Build exactly k options from pool including the correct answer (no 'None of the above').
-    """
+    """Build exactly k options including the correct answer (no 'None of the above')."""
     pool_unique = list(dict.fromkeys(pool))  # de-dup
     distractors = [w for w in pool_unique if w != correct]
     random.shuffle(distractors)
@@ -98,9 +114,15 @@ def make_k_options_including_correct(correct: str, pool: List[str], k: int = 5) 
     chosen = distractors[:need]
     opts = chosen + [correct]
     random.shuffle(opts)
-    # If pool has fewer than k unique words, just return what's available (still includes correct)
     return opts[:k]
 
+def normalize_answer(s: str) -> str:
+    """Lowercase and remove spaces/punctuation for robust matching."""
+    return re.sub(r"[^a-z0-9]+", "", s.lower())
+
+# -------------------------------------------------
+# Audio (gTTS) + cache
+# -------------------------------------------------
 def tts_mp3(word: str, lang: str = "en") -> bytes:
     """Generate TTS MP3 bytes for the given word/phrase."""
     tts = gTTS(text=word, lang=lang)
@@ -109,9 +131,10 @@ def tts_mp3(word: str, lang: str = "en") -> bytes:
     buf.seek(0)
     return buf.read()
 
-def normalize_answer(s: str) -> str:
-    """Lowercase and remove spaces/punctuation for robust matching."""
-    return re.sub(r"[^a-z0-9]+", "", s.lower())
+@st.cache_data(show_spinner=False, max_entries=1000)
+def tts_cached(word: str, lang: str = "en") -> bytes:
+    """Cached audio bytes per (word, lang)."""
+    return tts_mp3(word, lang)
 
 # ---------------- State resetters ----------------
 def reset_all_for_set_change():
@@ -154,6 +177,15 @@ df = load_data(CSV_URL)
 sets = build_sets(df)
 set_names = list(sets.keys())  # e.g., ['set1','set2',...,'set6']
 
+if not set_names:
+    st.error("No sets found. Please check the CSV.")
+    st.stop()
+
+# Helper for safe selectbox index
+def _safe_index(names: List[str], selected: str | None) -> int:
+    if selected in names:
+        return names.index(selected)
+    return 0
 
 # -------------------------------------------------
 # App Title
@@ -161,7 +193,7 @@ set_names = list(sets.keys())  # e.g., ['set1','set2',...,'set6']
 st.markdown("### 🐥 단어 연습 앱 (Word Practice App)")
 
 # -------------------------------------------------
-# Tabs
+# Tabs (order controls visual order)
 # -------------------------------------------------
 tab1, tab2, tab3 = st.tabs([
     "1️⃣ Practice 1: 단어-뜻 연습",
@@ -173,7 +205,7 @@ tab1, tab2, tab3 = st.tabs([
 # Init shared and tab-specific state
 # -------------------------------------------------
 if "selected_set" not in st.session_state:
-    st.session_state.selected_set = set_names[0] if set_names else None
+    st.session_state.selected_set = set_names[0]
 
 # Tab1 state
 for key, default in [
@@ -214,15 +246,17 @@ for key, default in [
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
+
 # -------------------------------------------------
 # Tab 1: 뜻 맞히기 (세트 내 5지선다, None 없음)
 # -------------------------------------------------
 with tab1:
     st.markdown("#### 1. 세트 선택")
+    idx3 = _safe_index(set_names, st.session_state.selected_set)
     set_choice3 = st.selectbox(
         "Choose a word set to practice:",
         set_names,
-        index=set_names.index(st.session_state.selected_set) if st.session_state.selected_set in set_names else 0,
+        index=idx3,
         key="set_select_q3",
     )
     if set_choice3 != st.session_state.selected_set:
@@ -304,18 +338,16 @@ with tab1:
     if st.session_state.remaining_q3:
         st.caption(f"진행 상황: {len(st.session_state.solved_q3)}/{len(st.session_state.remaining_q3)} 완료")
 
-
-
-
 # -------------------------------------------------
-# Tab 3 => 2: 문장 속 단어 (MCQ)
+# Tab 2: 문장 속 단어 (MCQ)
 # -------------------------------------------------
 with tab2:
     st.markdown("#### 1. 세트 선택")
+    idx1 = _safe_index(set_names, st.session_state.selected_set)
     set_choice = st.selectbox(
         "Choose a word set to practice:",
         set_names,
-        index=set_names.index(st.session_state.selected_set) if st.session_state.selected_set in set_names else 0,
+        index=idx1,
         key="set_select_q1",
     )
 
@@ -422,14 +454,15 @@ with tab2:
         st.caption(f"진행 상황: {len(st.session_state.solved_q1)}/{len(st.session_state.remaining_q1)} 완료")
 
 # -------------------------------------------------
-# Tab 2 => 3: 듣고 스펠링 (대소문자/공백/문장부호 무시)
+# Tab 3: 듣고 스펠링 (대소문자/공백/문장부호 무시)
 # -------------------------------------------------
 with tab3:
     st.markdown("#### 1. 세트 선택")
+    idx2 = _safe_index(set_names, st.session_state.selected_set)
     set_choice2 = st.selectbox(
         "Choose a word set to practice:",
         set_names,
-        index=set_names.index(st.session_state.selected_set) if st.session_state.selected_set in set_names else 0,
+        index=idx2,
         key="set_select_q2",
     )
     if set_choice2 != st.session_state.selected_set:
@@ -457,7 +490,7 @@ with tab3:
                         st.session_state.completed_q2 = True
                     else:
                         target_word = random.choice(remaining)
-                        audio_bytes = tts_mp3(target_word, lang="en")
+                        audio_bytes = tts_cached(target_word, lang="en")  # <- cached TTS
                         st.session_state.current_q2 = {"word": target_word}
                         st.session_state.audio_bytes_q2 = audio_bytes
                         st.session_state.user_spelling = ""
@@ -507,4 +540,3 @@ with tab3:
 
     if st.session_state.remaining_q2:
         st.caption(f"진행 상황: {len(st.session_state.solved_q2)}/{len(st.session_state.remaining_q2)} 완료")
-
