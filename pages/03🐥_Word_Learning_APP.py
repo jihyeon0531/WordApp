@@ -7,11 +7,18 @@ import tempfile
 import pandas as pd
 import streamlit as st
 from gtts import gTTS
+from datetime import datetime
+import os
 
 # ---------------- Page setup ----------------
 st.set_page_config(page_title="Word Practice")
 st.markdown("### 🐥 단어 학습 어플리케이션 (Word learning App)")
 
+st.sidebar.caption(f"Build time: {datetime.now():%Y-%m-%d %H:%M:%S}")
+st.sidebar.caption(f"Running file: {__file__}")
+st.sidebar.caption(f"WD: {os.getcwd()}")
+if st.sidebar.button("🔄 Force rerun"):
+    st.rerun()
 # ---------------- Data ----------------
 CSV_URL = "https://raw.githubusercontent.com/jihyeon0531/WordApp/refs/heads/main/data/2025_Ch6_8_0819.csv"
 df = pd.read_csv(CSV_URL)
@@ -175,6 +182,7 @@ with tab1:
 
 # ---------------- Tab 2: Practice ----------------
 with tab2:
+    st.markdown("### 🧭 DEBUG: Tab 2 is using THIS script")
     st.markdown("### ✨ Step 2: Then, let's practice the words that you chose.")
     if not st.session_state.submitted or len(st.session_state.selected_words) == 0:
         st.info("Please go to **Tab 1** and select words first.")
