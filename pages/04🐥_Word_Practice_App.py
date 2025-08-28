@@ -18,27 +18,27 @@ st.set_page_config(page_title="Word Practice")
 # -------------------------------------------------
 # Sidebar: version + controls
 # -------------------------------------------------
-st.sidebar.caption(f"Build: practice_mcq_app.py | {datetime.now():%Y-%m-%d %H:%M:%S}")
-st.sidebar.caption(f"Streamlit {st.__version__}")
-st.sidebar.caption(f"Running file: {__file__}")
-st.sidebar.caption(f"WD: {os.getcwd()}")
+#st.sidebar.caption(f"Build: practice_mcq_app.py | {datetime.now():%Y-%m-%d %H:%M:%S}")
+#st.sidebar.caption(f"Streamlit {st.__version__}")
+#st.sidebar.caption(f"Running file: {__file__}")
+#st.sidebar.caption(f"WD: {os.getcwd()}")
 
 # Force rerun (this session only)
-if st.sidebar.button("🔄 Force rerun", key="force_rerun_btn"):
-    st.rerun()
+#if st.sidebar.button("🔄 Force rerun", key="force_rerun_btn"):
+#    st.rerun()
 
 # Clear ONLY my session_state (safe for multi-user)
-if st.sidebar.button("🧹 Clear my session", key="wipe_state_btn"):
-    for k in list(st.session_state.keys()):
-        del st.session_state[k]
-    st.sidebar.success("Session state cleared.")
-    st.rerun()
+# if st.sidebar.button("🧹 Clear my session", key="wipe_state_btn"):
+#     for k in list(st.session_state.keys()):
+#         del st.session_state[k]
+#     st.sidebar.success("Session state cleared.")
+#     st.rerun()
 
 # Clear app-wide data cache (affects ALL users)
-if st.sidebar.button("♻️ Refresh data (clear cache)", key="clear_cache_btn"):
-    st.cache_data.clear()
-    st.sidebar.success("Data cache cleared (global).")
-    st.rerun()
+# if st.sidebar.button("♻️ Refresh data (clear cache)", key="clear_cache_btn"):
+#     st.cache_data.clear()
+#     st.sidebar.success("Data cache cleared (global).")
+#     st.rerun()
 
 # -------------------------------------------------
 # Data
