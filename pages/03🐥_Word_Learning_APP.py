@@ -181,7 +181,7 @@ with tab1:
 
 # ---------------- Tab 2: Practice ----------------
 with tab2:
-    st.markdown("### 🧭 DEBUG: Tab 2 is using THIS script")
+
     st.markdown("### ✨ Step 2: Then, let's practice the words that you chose.")
     if not st.session_state.submitted or len(st.session_state.selected_words) == 0:
         st.info("Please go to **Tab 1** and select words first.")
