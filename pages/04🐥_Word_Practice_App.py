@@ -5,7 +5,7 @@ import io
 import os
 from typing import List, Dict
 from datetime import datetime
-
+import base64
 import pandas as pd
 import streamlit as st
 from gtts import gTTS
@@ -123,6 +123,7 @@ def normalize_answer(s: str) -> str:
 # -------------------------------------------------
 # Audio (gTTS) + cache
 # -------------------------------------------------
+
 def tts_mp3(word: str, lang: str = "en") -> bytes:
     """Generate TTS MP3 bytes for the given word/phrase."""
     tts = gTTS(text=word, lang=lang)
@@ -169,6 +170,21 @@ def reset_q3_all():
     st.session_state.remaining_q3 = []
     st.session_state.completed_q3 = False
     st.session_state.solved_current_q3 = False
+
+
+#---------------------
+# Audio play for iOS friendly version
+#---------------------
+
+def audio_html(audio_bytes, mime='audio/mp3'):
+    """Create an HTML5 audio player with embedded base64 audio."""
+    b64 = base64.b64encode(audio_bytes).decode()
+    return f"""
+    <audio controls autoplay>
+        <source src="data:{mime};base64,{b64}" type="{mime}">
+        Your browser does not support the audio element.
+    </audio>
+    """
 
 # -------------------------------------------------
 # Load data and prepare sets
@@ -510,7 +526,8 @@ with tab3:
         q2 = st.session_state.current_q2
 
         if st.session_state.audio_bytes_q2:
-            st.audio(st.session_state.audio_bytes_q2, format="audio/mp3")
+#            st.audio(st.session_state.audio_bytes_q2, format="audio/mp3")
+            st.markdown(audio_html(st.session_state.audio_bytes_q2), unsafe_allow_html=True)
         else:
             st.warning("오디오 로드에 문제가 발생했습니다. 다시 시작해 주세요.")
 
