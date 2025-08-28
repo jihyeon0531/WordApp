@@ -177,15 +177,14 @@ def reset_q3_all():
 #---------------------
 
 def audio_html(audio_bytes, mime='audio/mp3'):
-    """Create an HTML5 audio player with embedded base64 audio."""
-    b64 = base64.b64encode(audio_bytes).decode()
-    return f"""
+    b64 = base64.b64encode(audio_bytes).decode('utf-8')
+    audio_tag = f"""
     <audio controls>
         <source src="data:{mime};base64,{b64}" type="{mime}">
         Your browser does not support the audio element.
     </audio>
     """
-
+    return audio_tag
 
 # -------------------------------------------------
 # Load data and prepare sets
