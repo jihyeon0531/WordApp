@@ -526,8 +526,9 @@ with tab3:
     if st.session_state.current_q2 and not st.session_state.completed_q2:
         q2 = st.session_state.current_q2
 
-        if st.session_state.audio_bytes_q2:
+#        if st.session_state.audio_bytes_q2:
 #            st.audio(st.session_state.audio_bytes_q2, format="audio/mp3")
+        if st.session_state.audio_bytes_q2:
             st.markdown(audio_html(st.session_state.audio_bytes_q2), unsafe_allow_html=True)
 
         else:
