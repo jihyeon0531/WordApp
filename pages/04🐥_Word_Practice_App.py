@@ -180,11 +180,12 @@ def audio_html(audio_bytes, mime='audio/mp3'):
     """Create an HTML5 audio player with embedded base64 audio."""
     b64 = base64.b64encode(audio_bytes).decode()
     return f"""
-    <audio controls autoplay>
+    <audio controls>
         <source src="data:{mime};base64,{b64}" type="{mime}">
         Your browser does not support the audio element.
     </audio>
     """
+
 
 # -------------------------------------------------
 # Load data and prepare sets
@@ -528,6 +529,7 @@ with tab3:
         if st.session_state.audio_bytes_q2:
 #            st.audio(st.session_state.audio_bytes_q2, format="audio/mp3")
             st.markdown(audio_html(st.session_state.audio_bytes_q2), unsafe_allow_html=True)
+
         else:
             st.warning("오디오 로드에 문제가 발생했습니다. 다시 시작해 주세요.")
 
