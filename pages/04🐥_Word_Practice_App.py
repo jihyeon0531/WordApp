@@ -532,9 +532,7 @@ with tab3:
 
         else:
             st.warning("오디오 로드에 문제가 발생했습니다. 다시 시작해 주세요.")
-    # Test saving to confirm it's a real mp3
-    with open("test.mp3", "wb") as f:
-        f.write(st.session_state.audio_bytes_q2)
+
     
         st.write("")
         st.markdown("**Q:** 들은 단어(또는 어구)의 스펠링을 입력하세요.")
