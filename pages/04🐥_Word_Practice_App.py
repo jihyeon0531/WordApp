@@ -177,14 +177,17 @@ def reset_q3_all():
 #---------------------
 
 def audio_html(audio_bytes, mime='audio/mp3'):
-    b64 = base64.b64encode(audio_bytes).decode('utf-8')
-    audio_tag = f"""
-    <audio controls>
+    """Create an HTML5 audio player with embedded base64 audio."""
+    b64 = base64.b64encode(audio_bytes).decode()
+    return f"""
+    <audio controls autoplay>
         <source src="data:{mime};base64,{b64}" type="{mime}">
         Your browser does not support the audio element.
     </audio>
     """
-    return audio_tag
+
+# Instead of st.audio(...)
+
 
 # -------------------------------------------------
 # Load data and prepare sets
@@ -528,8 +531,7 @@ with tab3:
 #        if st.session_state.audio_bytes_q2:
 #            st.audio(st.session_state.audio_bytes_q2, format="audio/mp3")
         if st.session_state.audio_bytes_q2:
-#            st.markdown(audio_html(st.session_state.audio_bytes_q2), unsafe_allow_html=True)
-            st.audio(st.session_state.audio_bytes_q2, format="audio/mp3")
+            st.markdown(audio_html(st.session_state.audio_bytes_q2), unsafe_allow_html=True)
 
 
         else:
