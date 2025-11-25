@@ -216,15 +216,19 @@ with tab2:
 
             # Generate and play audio using gTTS
             # ---- FIX FOR iPHONE: use audio bytes instead of temp file ----
+            # Generate and play audio using gTTS  (iPhone-friendly version)
             try:
                 tts = gTTS(sentence)
                 buf = io.BytesIO()
                 tts.write_to_fp(buf)
                 buf.seek(0)
                 audio_bytes = buf.read()
-                st.audio(audio_bytes, format="audio/mp3")
+            
+                # Important for iOS: use audio/mpeg
+                st.audio(audio_bytes, format="audio/mpeg")
             except Exception as e:
                 st.warning(f"Audio unavailable for this sentence. ({e})")
+            
 
 
             st.write("---")
