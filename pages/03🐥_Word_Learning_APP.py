@@ -9,6 +9,7 @@ import streamlit as st
 from gtts import gTTS
 from datetime import datetime
 import os
+import io
 
 
 # ----- Page setup (force sidebar visible) -----
@@ -214,12 +215,20 @@ with tab2:
             )
 
             # Generate and play audio using gTTS
+            # ---- FIX FOR iPHONE: use audio bytes instead of temp file ----
+            # Generate and play audio using gTTS  (iPhone-friendly version)
             try:
                 tts = gTTS(sentence)
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
-                    tts.save(fp.name)
-                    st.audio(fp.name, format="audio/mp3")
+                buf = io.BytesIO()
+                tts.write_to_fp(buf)
+                buf.seek(0)
+                audio_bytes = buf.read()
+            
+                # Important for iOS: use audio/mpeg
+                st.audio(audio_bytes, format="audio/mpeg")
             except Exception as e:
                 st.warning(f"Audio unavailable for this sentence. ({e})")
+            
+
 
             st.write("---")
