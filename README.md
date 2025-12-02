@@ -9,13 +9,24 @@
 
 |Class|N of students|Treatment slots|Remark|
 |--|--|--|--|
-|2-1|23|10*8|Example|
-|2-2|25|10*7|모르겠당|
+|2-1|29|10*8|       |
+|2-2|29|10*7|       |
+|2-3|29|10*8|       |
+|2-4|29|10*7|       |
+|2-5|29|10*8|       |
+|2-6|29|10*7|       |
+|2-7|29|10*8|       |
+|2-8|29|10*7|       |
+|2-9|28|10*8|       |
+|2-10|28|10*7|       |
+|2-11|28|10*8|       |
+|2-12|28|10*7|       |
+|2-13|28|10*8|       |
 
 # Pre-test survey item = Post-test survey item
 
 + 40 items in total
 + Simple word matching: form-meaning, meaning-form (30: 15 (A) + 15 (B))
-+ Words in context: cloz question type (10: 5 (A) + 5 (B))
++ Words in context: cloze question type (10: 5 (A) + 5 (B))
 + Words that have covered (A): 20
 + Words that will be convered (B): 20
